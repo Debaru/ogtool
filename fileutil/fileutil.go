@@ -54,3 +54,46 @@ func Download(url string, dir string) (*os.File, error) {
 
 	return f, nil
 }
+
+// Copy copies file from source (src) to destination (dst)
+func Copy(src string, dest string) error {
+	// Open source file
+	fSrc, err := os.Open(src)
+	defer fSrc.Close()
+	if err != nil {
+		return err
+	}
+
+	// Create destination file
+	fDest, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE, 0755)
+	defer fDest.Close()
+	if err != nil {
+		return err
+	}
+
+	// Copy content
+	_, err = io.Copy(fDest, fSrc)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CopyCut copies file from source (src) to destination (dst), then
+// delete source (src) file
+func CopyCut(src string, dest string) error {
+	// Copy
+	err := Copy(src, dest)
+	if err != nil {
+		return err
+	}
+
+	// Delete source file
+	err = os.Remove(src)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

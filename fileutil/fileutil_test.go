@@ -2,9 +2,11 @@ package fileutil
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 )
 
+// Testing GetName
 func TestGetName(t *testing.T) {
 	testCase := []struct {
 		name string
@@ -31,6 +33,7 @@ func TestGetName(t *testing.T) {
 	}
 }
 
+// Testing GetExtension
 func TestGetExtension(t *testing.T) {
 	testCase := []struct {
 		name string
@@ -57,6 +60,7 @@ func TestGetExtension(t *testing.T) {
 	}
 }
 
+// Testing Download
 func TestDownload(t *testing.T) {
 	TestCase := []struct {
 		url  string
@@ -67,12 +71,12 @@ func TestDownload(t *testing.T) {
 		{"https://golang.org/doc/gopher/", "", true},
 		{"", "", true},
 		{"https://golang.org/", "", true},
-		{"https://golang.org", "golang.org", true},
+		{"https://golang.org", "golang.org", false},
 	}
 
 	for _, tc := range TestCase {
 		t.Run(fmt.Sprintf("%s", tc.url), func(t *testing.T) {
-			f, err := Download(tc.url, ".")
+			f, err := Download(tc.url, "test_data")
 
 			if err != nil {
 				if tc.err == false {
@@ -81,8 +85,61 @@ func TestDownload(t *testing.T) {
 			}
 
 			if err == nil {
-				if f.Name() != tc.want {
+				n := filepath.Base(f.Name())
+				if n != tc.want {
 					t.Errorf("Expected %s, got %s", tc.want, f.Name())
+				}
+			}
+		})
+	}
+}
+
+// Testing Copy
+func TestCopy(t *testing.T) {
+	TestCase := []struct {
+		name string
+		src  string
+		dest string
+		err  bool
+	}{
+		{"Normal", "test_data/test_copy.txt", "test_data/test_copy_2.txt", false},
+		{"No_Src", "test_data/no_src.txt", "test_data/test_copy_2.txt", true},
+		{"No_Dest", "test_data/test_copy.txt", "", true},
+	}
+
+	for _, tc := range TestCase {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Copy(tc.src, tc.dest)
+
+			if err != nil {
+				if tc.err == false {
+					t.Error("No error was expected")
+				}
+			}
+		})
+	}
+}
+
+// Testing CopyCut
+func TestCopyCut(t *testing.T) {
+	TestCase := []struct {
+		name string
+		src  string
+		dest string
+		err  bool
+	}{
+		{"Normal", "test_data/test_copy_2.txt", "test_data/test_cut.txt", false},
+		{"No_Src", "test_data/no_src.txt", "test_data/test_cut.txt", true},
+		{"No_Dest", "test_data/test_copy_2.txt", "", true},
+	}
+
+	for _, tc := range TestCase {
+		t.Run(tc.name, func(t *testing.T) {
+			err := CopyCut(tc.src, tc.dest)
+
+			if err != nil {
+				if tc.err == false {
+					t.Error("No error was expected")
 				}
 			}
 		})
